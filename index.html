@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Ubuntu Sans', Helvetica, Arial, sans-serif;
+      background: transparent;
+      color: white;
+      height: 100vh;
+      overflow: hidden;
+      -webkit-app-region: drag;
+      user-select: none;
+    }
+
+    /* tudo interativo não arrasta */
+    input, button, .task, a { -webkit-app-region: no-drag; }
+
+    .widget {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 14px 12px;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.10);
+      border-radius: 14px;
+    }
+
+    /* status bar (offline / syncing) */
+    #statusBar {
+      font-size: 10px;
+      font-weight: 300;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      opacity: 0;
+      height: 12px;
+      transition: opacity 0.3s;
+      color: rgba(255,255,255,0.55);
+      text-align: right;
+    }
+    #statusBar.visible { opacity: 1; }
+
+    /* handle de arrastar */
+    .drag-handle {
+      height: 18px;
+      -webkit-app-region: drag;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .drag-handle::before {
+      content: '';
+      width: 32px;
+      height: 3px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 3px;
+    }
+    .drag-handle:active { cursor: grabbing; }
+
+    /* input nova tarefa */
+    .add-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 2px 4px 2px 10px;
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    .add-row input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: white;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 300;
+      padding: 6px 0;
+    }
+    .add-row input::placeholder { color: rgba(255,255,255,0.30); }
+    .add-row button {
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.40);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 2px 6px 4px;
+      line-height: 1;
+      transition: color 0.15s;
+      font-weight: 300;
+    }
+    .add-row button:hover { color: rgba(255,255,255,0.85); }
+
+    /* lista */
+    #taskList {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    #taskList::-webkit-scrollbar { width: 2px; }
+    #taskList::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+    .task {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 5px 4px;
+      border-radius: 5px;
+      transition: background 0.12s;
+      cursor: default;
+    }
+    .task:hover { background: rgba(255,255,255,0.06); }
+
+    /* checkbox custom */
+    .task input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border: 1.5px solid rgba(255,255,255,0.35);
+      border-radius: 50%;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-top: 1px;
+      transition: all 0.15s;
+      position: relative;
+    }
+    .task input[type="checkbox"]:checked {
+      background: rgba(255,255,255,0.20);
+      border-color: rgba(255,255,255,0.20);
+    }
+    .task input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      left: 3px; top: 1px;
+      width: 4px; height: 7px;
+      border: 1.5px solid rgba(255,255,255,0.55);
+      border-left: none; border-top: none;
+      transform: rotate(45deg);
+    }
+
+    .task-body { flex: 1; min-width: 0; }
+    .task-title {
+      font-size: 14.5px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.90);
+      line-height: 1.4;
+      word-break: break-word;
+    }
+    .task-project {
+      font-size: 11px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.30);
+      margin-top: 1px;
+    }
+    .task.completed .task-title {
+      text-decoration: line-through;
+      color: rgba(255,255,255,0.28);
+    }
+
+    .btn-del {
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.0);
+      font-size: 11px;
+      cursor: pointer;
+      padding: 0 2px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      transition: color 0.12s;
+      line-height: 1;
+    }
+    .task:hover .btn-del { color: rgba(255,255,255,0.25); }
+    .task:hover .btn-del:hover { color: rgba(255,255,255,0.70); }
+
+    .section-sep {
+      height: 1px;
+      background: rgba(255,255,255,0.07);
+      margin: 4px 0;
+    }
+
+    .empty-msg {
+      font-size: 11px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.30);
+      padding: 10px 0;
+      letter-spacing: 0.3px;
+    }
+
+    /* offline banner inline */
+    .offline-badge {
+      display: inline-block;
+      font-size: 9px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: rgba(255,180,80,0.80);
+      font-weight: 400;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="widget">
+    <div class="drag-handle"></div>
+    <div id="statusBar"></div>
+    <div class="add-row">
+      <input id="newTask" type="text" placeholder="nova tarefa…" autocomplete="off" />
+      <button onclick="addTask()" title="Adicionar">+</button>
+    </div>
+    <div id="taskList"></div>
+  </div>
+
+  <script src="node_modules/axios/dist/axios.min.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>

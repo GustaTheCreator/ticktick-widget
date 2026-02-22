@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-container {
+      background: rgba(0,0,0,0.3);
+      padding: 40px;
+      border-radius: 15px;
+      max-width: 400px;
+      width: 100%;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    h1 { margin-bottom: 10px; font-size: 28px; text-align: center; }
+    .subtitle { text-align: center; opacity: 0.8; margin-bottom: 30px; font-size: 14px; }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label { display: block; margin-bottom: 8px; font-weight: bold; }
+    input {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      background: rgba(255,255,255,0.9);
+    }
+    input:focus { 
+      outline: none;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-bottom: 10px;
+    }
+    button:hover { background: #45a049; }
+    button.secondary {
+      background: #667eea;
+    }
+    button.secondary:hover { background: #5568d3; }
+    .info {
+      background: rgba(76, 175, 80, 0.2);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      line-height: 1.5;
+      border-left: 4px solid #4CAF50;
+    }
+    .error { 
+      background: rgba(255, 107, 107, 0.2);
+      color: #ff6b6b;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      border-left: 4px solid #ff6b6b;
+      display: none;
+    }
+    .instructions {
+      font-size: 12px;
+      opacity: 0.9;
+      margin-top: 15px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1>📋 TickTick Widget</h1>
+    <p class="subtitle">Gerencie suas tarefas facilmente</p>
+    
+    <div id="error" class="error"></div>
+    
+    <div class="info">
+      💡 <strong>Nota:</strong> O token fornecido é um token de integração. Para usar o widget, você precisa gerar um token de acesso pessoal do TickTick.
+    </div>
+
+    <div class="form-group">
+      <label for="token">Token de Acesso Pessoal</label>
+      <input id="token" type="password" placeholder="Cole seu token aqui..." />
+      <div class="instructions">
+        Para obter seu token: <br>
+        1. Acesse <strong>TickTick.com</strong><br>
+        2. Vá em Configurações → Integrações<br>
+        3. Clique em "Autorizar" e copie o token
+      </div>
+    </div>
+
+    <button onclick="saveToken()">Entrar</button>
+    <button class="secondary" onclick="useDemoToken()">Demo (Sem dados)</button>
+  </div>
+
+  <script>
+    // Carregar token salvo se existir
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedToken = localStorage.getItem('ticktick_token');
+      if (savedToken) {
+        window.location.href = 'index.html';
+      }
+    });
+
+    function saveToken() {
+      const token = document.getElementById('token').value.trim();
+      
+      if (!token) {
+        showError('Por favor, forneça um token válido');
+        return;
+      }
+      
+      // Salvar token
+      localStorage.setItem('ticktick_token', token);
+      
+      // Ir para página principal
+      window.location.href = 'index.html';
+    }
+
+    function useDemoToken() {
+      localStorage.setItem('ticktick_token', 'DEMO_TOKEN');
+      window.location.href = 'index.html?demo=true';
+    }
+
+    function showError(msg) {
+      document.getElementById('error').textContent = msg;
+      document.getElementById('error').style.display = 'block';
+    }
+
+    // Enter para logar
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('token').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') saveToken();
+      });
+    });
+  </script>
+</body>
+</html>

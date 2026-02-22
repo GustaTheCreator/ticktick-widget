@@ -1,0 +1,9 @@
+# Segredos — nunca commitar
+.env
+
+# Dependências
+node_modules/
+
+# Electron build
+dist/
+out/
