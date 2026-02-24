@@ -157,12 +157,12 @@ async function toggleTask(taskId, isChecked) {
   renderTasks(); // atualizar imediatamente, sem esperar API
   try {
     if (isChecked) {
-      await api.post(`/task/${taskId}/complete`, { projectId: task.projectId });
+      await api.post(`/project/${task.projectId}/task/${taskId}/complete`);
     } else {
-      // Reabrir a tarefa
-      await api.put(`/task/${taskId}`, {
-        projectId: task.projectId,
+      await api.post(`/task/${taskId}`, {
         id: taskId,
+        projectId: task.projectId,
+        title: task.title,
         status: 0
       });
     }

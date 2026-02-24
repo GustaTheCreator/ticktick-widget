@@ -56,6 +56,7 @@ app.whenReady().then(() => {
   win.loadFile('index.html');
 
   // Guardar posição sempre que a janela é movida
+  win.on('minimize', () => win.restore()); // manter visível no Super+D
   win.on('moved', savePos);
   win.on('close', savePos);
 });
