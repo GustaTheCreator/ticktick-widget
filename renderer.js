@@ -1,9 +1,25 @@
 const API_TOKEN = window.electronAPI.apiToken;
+const WIDGET_SETTINGS = window.electronAPI.settings || {};
 const API_BASE = 'https://api.ticktick.com/open/v1';
 let allTasks = [];
 let firstLoad = true;
 let isOffline = !navigator.onLine;
 let retryTimer = null;
+
+function applyWidgetSettings() {
+  const rawTransparency = Number(WIDGET_SETTINGS.transparency);
+  const transparency = Number.isFinite(rawTransparency)
+    ? Math.max(0, Math.min(1, rawTransparency))
+    : 0.1;
+
+  document.documentElement.style.setProperty('--widget-bg-alpha', String(transparency));
+}
+
+function getSyncIntervalMs() {
+  const raw = Number(WIDGET_SETTINGS.syncIntervalMs);
+  if (!Number.isFinite(raw)) return 30000;
+  return Math.max(5000, Math.round(raw));
+}
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -15,11 +31,14 @@ const api = axios.create({
 });
 
 window.addEventListener('DOMContentLoaded', () => {
+  applyWidgetSettings();
+  const syncIntervalMs = getSyncIntervalMs();
+
   document.getElementById('newTask').addEventListener('keypress', e => {
     if (e.key === 'Enter') addTask();
   });
   fetchTasks();
-  setInterval(fetchTasks, 30000);
+  setInterval(fetchTasks, syncIntervalMs);
 });
 
 // Deteção offline/online

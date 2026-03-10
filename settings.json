@@ -1,0 +1,10 @@
+{
+  "transparency": 0.5,
+  "width": 320,
+  "height": 600,
+  "syncIntervalMs": 30000,
+  "alwaysOnTop": false,
+  "startupDelayMs": 0,
+  "defaultX": null,
+  "defaultY": null
+}
